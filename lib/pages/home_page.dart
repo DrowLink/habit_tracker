@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/components/habit_tile.dart';
+import 'package:habit_tracker/components/my_fab.dart';
+import 'package:habit_tracker/components/new_habit_box.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,28 +11,47 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // checkbox was tapped
-  bool habitCompleted = false;
 
-  void checkBoxTapped(bool? value) {
+  // data structure for todays list
+  List todaysHabitList = [
+    ["Morning Run", false],
+    ["Evening Run", false],
+  ];
+
+
+  //bool to control habit completed
+
+  // checkbox was tapped
+  void checkBoxTapped(bool? value, int index) {
     setState(() {
-      habitCompleted = value!;
+      todaysHabitList[index][1] = value;
     });
+  }
+
+  // create a new habit
+  void createNewHabit() {
+    // show alert dialog for user to enter the new habit details
+    showDialog(context: context, builder: (context) {
+      return EnterNewHabitBox();
+    },);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[300],
-      body: ListView(
-        children: [
-          //habit tiles
-          HabitTile(
-            habitCompleted: true,
-            habitName: '',
-            onChanged: (value) {},
-          ),
-        ],
+      floatingActionButton: MyFloatingActionButton(
+        onPressed: () => createNewHabit(),
+      ),
+      body: ListView.builder(
+        itemCount: todaysHabitList.length,
+        itemBuilder: (context, index) {
+          return HabitTile(
+            habitName: todaysHabitList[index][0],
+            habitCompleted: todaysHabitList[index][1],
+            onChanged: (value) => checkBoxTapped(value, index),
+            );
+        },
       ),
     );
   }
