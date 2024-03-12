@@ -1,34 +1,58 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables
-
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class HabitTile extends StatelessWidget {
   final String habitName;
   final bool habitCompleted;
   final Function(bool?)? onChanged;
+  final Function(BuildContext)? settingTapped;
+  final Function(BuildContext)? deleteTapped;
 
-  const HabitTile({super.key, required this.habitName, required this.habitCompleted, this.onChanged});
+
+  const HabitTile({super.key, required this.habitName, required this.habitCompleted, this.onChanged, this.settingTapped, this.deleteTapped});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Container(
-        padding: EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius:  BorderRadius.circular(11),
-          ),
-        child: Row(
-          children: [
-            //checkbox
-            Checkbox(value: habitCompleted, onChanged: onChanged),
+      child: Slidable(
+        endActionPane: ActionPane(
+          motion: const StretchMotion(),
+           children: [
+            //settings options
+            SlidableAction(
+              onPressed: settingTapped,
+              backgroundColor: Colors.grey.shade800,
+              icon: Icons.settings,
+              borderRadius: BorderRadius.circular(12),
+            ),
 
-            //habit name
-            Text('Morning Run'),
-          ],
-        )
-        ,
+            //delete options
+            SlidableAction(
+              onPressed: deleteTapped,
+              backgroundColor: Colors.red.shade400,
+              icon: Icons.delete,
+              borderRadius: BorderRadius.circular(12),
+            ),
+           ]
+           ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius:  BorderRadius.circular(11),
+            ),
+          child: Row(
+            children: [
+              //checkbox
+              Checkbox(value: habitCompleted, onChanged: onChanged),
+        
+              //habit name
+              Text(habitName),
+            ],
+          )
+          ,
+        ),
       ),
     );
   }
