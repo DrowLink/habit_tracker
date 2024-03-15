@@ -11,13 +11,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   // data structure for todays list
-  List todaysHabitList = [
+  List<List<dynamic>> todaysHabitList = [
     ["Morning Run", false],
     ["Evening Run", false],
   ];
-
 
   //bool to control habit completed
 
@@ -32,13 +30,17 @@ class _HomePageState extends State<HomePage> {
   final _newHabitNameController = TextEditingController();
   void createNewHabit() {
     // show alert dialog for user to enter the new habit details
-    showDialog(context: context, builder: (context) {
-      return MyAlertBox(
-        controller: _newHabitNameController,
-        onSave: saveNewHabit,
-        onCancel: cancelDialogBox,
-      );
-    },);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return MyAlertBox(
+          hintText: 'Enter habit name',
+          controller: _newHabitNameController,
+          onSave: saveNewHabit,
+          onCancel: cancelDialogBox,
+        );
+      },
+    );
   }
 
   //save new habit
@@ -53,7 +55,6 @@ class _HomePageState extends State<HomePage> {
     Navigator.of(context).pop();
   }
 
-
   //cancel new habit
   void cancelDialogBox() {
     //clear textfield
@@ -64,13 +65,17 @@ class _HomePageState extends State<HomePage> {
 
   //open habit settings to edit
   void openHabitSettings(int index) {
-    showDialog(context: context, builder: (context) {
-      return MyAlertBox(
-        controller: _newHabitNameController,
-        onSave: () => saveExistingHabit(index),
-        onCancel: cancelDialogBox,
+    showDialog(
+      context: context,
+      builder: (context) {
+        return MyAlertBox(
+          hintText: 'Enter habit name',
+          controller: _newHabitNameController,
+          onSave: () => saveExistingHabit(index),
+          onCancel: cancelDialogBox,
         );
-    },);
+      },
+    );
   }
 
   // save existing habit with new name
@@ -82,7 +87,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.pop(context);
   }
 
-  // delete habit 
+  // delete habit
   void deleteHabit(int index) {
     setState(() {
       todaysHabitList.removeAt(index);
@@ -105,7 +110,7 @@ class _HomePageState extends State<HomePage> {
             onChanged: (value) => checkBoxTapped(value, index),
             settingTapped: (context) => openHabitSettings(index),
             deleteTapped: (context) => deleteHabit(index),
-            );
+          );
         },
       ),
     );
