@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/components/habit_tile.dart';
+import 'package:habit_tracker/components/monthly_summary.dart';
 import 'package:habit_tracker/components/my_fab.dart';
 import 'package:habit_tracker/components/my_alert_box.dart';
 import 'package:habit_tracker/data/habit_database.dart';
@@ -13,35 +14,34 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // instance of db
   HabitDatabase db = HabitDatabase();
-  final _myBox = Hive.box('Habit_Database');
+  final _myBox = Hive.box("Habit_Database");
 
   @override
   void initState() {
-
-    //if theres not data, create default data
-    if (_myBox.get('CURRENT_HABIT_LIST') == null) {
+    // if there is no current habit list, then it is the 1st time ever opening the app
+    // then create default data
+    if (_myBox.get("CURRENT_HABIT_LIST") == null) {
       db.createDefaultData();
     }
-    //already data exists, not first time using app
+
+    // there already exists data, this is not the first time
     else {
       db.loadData();
     }
-    db.updateDatabase();
 
+    // update the database
+    db.updateDatabase();
 
     super.initState();
   }
-
-
-  //bool to control habit completed
 
   // checkbox was tapped
   void checkBoxTapped(bool? value, int index) {
     setState(() {
       db.todaysHabitList[index][1] = value;
     });
+    db.updateDatabase();
   }
 
   // create a new habit
@@ -52,8 +52,8 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) {
         return MyAlertBox(
-          hintText: 'Enter habit name',
           controller: _newHabitNameController,
+          hintText: 'Enter habit name..',
           onSave: saveNewHabit,
           onCancel: cancelDialogBox,
         );
@@ -61,34 +61,37 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  //save new habit
+  // save new habit
   void saveNewHabit() {
-    //add new habit to todays habit list
+    // add new habit to todays habit list
     setState(() {
       db.todaysHabitList.add([_newHabitNameController.text, false]);
     });
-    //clear textfield
+
+    // clear textfield
     _newHabitNameController.clear();
-    //pop dialog box
+    // pop dialog box
     Navigator.of(context).pop();
+    db.updateDatabase();
   }
 
-  //cancel new habit
+  // cancel new habit
   void cancelDialogBox() {
-    //clear textfield
+    // clear textfield
     _newHabitNameController.clear();
-    //pop dialog box
+
+    // pop dialog box
     Navigator.of(context).pop();
   }
 
-  //open habit settings to edit
+  // open habit settings to edit
   void openHabitSettings(int index) {
     showDialog(
       context: context,
       builder: (context) {
         return MyAlertBox(
-          hintText: 'Enter habit name',
           controller: _newHabitNameController,
+          hintText: db.todaysHabitList[index][0],
           onSave: () => saveExistingHabit(index),
           onCancel: cancelDialogBox,
         );
@@ -96,13 +99,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // save existing habit with new name
+  // save existing habit with a new name
   void saveExistingHabit(int index) {
     setState(() {
-      db.todaysHabitList[index][0] = _newHabitNameController;
+      db.todaysHabitList[index][0] = _newHabitNameController.text;
     });
     _newHabitNameController.clear();
     Navigator.pop(context);
+    db.updateDatabase();
   }
 
   // delete habit
@@ -110,26 +114,38 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       db.todaysHabitList.removeAt(index);
     });
+    db.updateDatabase();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[300],
-      floatingActionButton: MyFloatingActionButton(
-        onPressed: () => createNewHabit(),
-      ),
-      body: ListView.builder(
-        itemCount: db.todaysHabitList.length,
-        itemBuilder: (context, index) {
-          return HabitTile(
-            habitName: db.todaysHabitList[index][0],
-            habitCompleted: db.todaysHabitList[index][1],
-            onChanged: (value) => checkBoxTapped(value, index),
-            settingTapped: (context) => openHabitSettings(index),
-            deleteTapped: (context) => deleteHabit(index),
-          );
-        },
+      floatingActionButton: MyFloatingActionButton(onPressed: createNewHabit),
+      body: ListView(
+        children: [
+          // monthly summary heat map
+          MonthlySummary(
+            datasets: db.heatMapDataSet,
+            startDate: _myBox.get("START_DATE"),
+          ),
+
+          // list of habits
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: db.todaysHabitList.length,
+            itemBuilder: (context, index) {
+              return HabitTile(
+                habitName: db.todaysHabitList[index][0],
+                habitCompleted: db.todaysHabitList[index][1],
+                onChanged: (value) => checkBoxTapped(value, index),
+                settingsTapped: (context) => openHabitSettings(index),
+                deleteTapped: (context) => deleteHabit(index),
+              );
+            },
+          )
+        ],
       ),
     );
   }

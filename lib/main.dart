@@ -3,25 +3,24 @@ import 'package:habit_tracker/pages/home_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
-  //initialize hive
+  // initialize hive
   await Hive.initFlutter();
 
-  //open a box
+  // open a box
   await Hive.openBox("Habit_Database");
 
-  runApp(const MainApp());
+  runApp(const MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
-      theme: ThemeData(primarySwatch: Colors.yellow),
+      home: HomePage(),
+      theme: ThemeData(primarySwatch: Colors.green),
     );
   }
 }
