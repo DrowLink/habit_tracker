@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:habit_tracker/components/habit_tile.dart';
 import 'package:habit_tracker/components/my_fab.dart';
 import 'package:habit_tracker/components/my_alert_box.dart';
+import 'package:habit_tracker/data/habit_database.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,18 +13,34 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // data structure for todays list
-  List<List<dynamic>> todaysHabitList = [
-    ["Morning Run", false],
-    ["Evening Run", false],
-  ];
+  // instance of db
+  HabitDatabase db = HabitDatabase();
+  final _myBox = Hive.box('Habit_Database');
+
+  @override
+  void initState() {
+
+    //if theres not data, create default data
+    if (_myBox.get('CURRENT_HABIT_LIST') == null) {
+      db.createDefaultData();
+    }
+    //already data exists, not first time using app
+    else {
+      db.loadData();
+    }
+    db.updateDatabase();
+
+
+    super.initState();
+  }
+
 
   //bool to control habit completed
 
   // checkbox was tapped
   void checkBoxTapped(bool? value, int index) {
     setState(() {
-      todaysHabitList[index][1] = value;
+      db.todaysHabitList[index][1] = value;
     });
   }
 
@@ -47,7 +65,7 @@ class _HomePageState extends State<HomePage> {
   void saveNewHabit() {
     //add new habit to todays habit list
     setState(() {
-      todaysHabitList.add([_newHabitNameController.text, false]);
+      db.todaysHabitList.add([_newHabitNameController.text, false]);
     });
     //clear textfield
     _newHabitNameController.clear();
@@ -81,7 +99,7 @@ class _HomePageState extends State<HomePage> {
   // save existing habit with new name
   void saveExistingHabit(int index) {
     setState(() {
-      todaysHabitList[index][0] = _newHabitNameController;
+      db.todaysHabitList[index][0] = _newHabitNameController;
     });
     _newHabitNameController.clear();
     Navigator.pop(context);
@@ -90,7 +108,7 @@ class _HomePageState extends State<HomePage> {
   // delete habit
   void deleteHabit(int index) {
     setState(() {
-      todaysHabitList.removeAt(index);
+      db.todaysHabitList.removeAt(index);
     });
   }
 
@@ -102,11 +120,11 @@ class _HomePageState extends State<HomePage> {
         onPressed: () => createNewHabit(),
       ),
       body: ListView.builder(
-        itemCount: todaysHabitList.length,
+        itemCount: db.todaysHabitList.length,
         itemBuilder: (context, index) {
           return HabitTile(
-            habitName: todaysHabitList[index][0],
-            habitCompleted: todaysHabitList[index][1],
+            habitName: db.todaysHabitList[index][0],
+            habitCompleted: db.todaysHabitList[index][1],
             onChanged: (value) => checkBoxTapped(value, index),
             settingTapped: (context) => openHabitSettings(index),
             deleteTapped: (context) => deleteHabit(index),
