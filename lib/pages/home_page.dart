@@ -42,6 +42,7 @@ class _HomePageState extends State<HomePage> {
       db.todaysHabitList[index][1] = value;
     });
     db.updateDatabase();
+    // db.updateDatabase();
   }
 
   // create a new habit
